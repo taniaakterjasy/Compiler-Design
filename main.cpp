@@ -1,161 +1,62 @@
-/*#include <iostream>
-#include <fstream>
-using namespace std;
-
-int main()
-{
-    ifstream file("data.txt");
-
-    string line;
-
-    if (file.is_open())
-    {
-        while (getline(file, line))
-        {
-            cout << line << endl;
-        }
-
-        file.close();
-    }
-    else
-    {
-        cout << "File could not be opened." << endl;
-    }
-
-    return 0;
-} */
-
-
 #include <iostream>
-#include <fstream>
 using namespace std;
 
-
-bool isKeyword(string word) {
-    string keywords[] = {"int","float","double","char","main","return","cout","cin"};
-
-    for(int i=0;i<8;i++) {
-        if(word == keywords[i])
-            return true;
-    }
-    return false;
-}
-
-
-bool isOperator(char ch) {
-    return (ch=='+' || ch=='-' || ch=='*' || ch=='/' || ch=='=' || ch=='<' || ch=='>');
-}
-
-
-bool isPunctuation(char ch) {
-    return (ch=='(' || ch==')' || ch=='{' || ch=='}' || ch==',' || ch==';');
-}
-
-
-string verifyToken(string token) {
-
-    if(isKeyword(token))
-        return "Keyword";
-
-    bool isNumber = true;
-
-    for(int i=0;i<token.length();i++) {
-        if(token[i]<'0' || token[i]>'9') {
-            isNumber=false;
-            break;
+bool isValidString(string str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] != 'a' && str[i] != 'b') {
+            return false;
         }
     }
+    return true;
+}
 
-    if(isNumber)
-        return "Constant";
+
+char transition(char currentState, char input) {
 
 
-    if(token[0]=='"' && token[token.length()-1]=='"')
-        return "Constant";
 
-    if((token[0]>='a' && token[0]<='z') ||
-       (token[0]>='A' && token[0]<='Z') ||
-        token[0]=='_')
-        return "Identifier";
+    if (currentState == 'A') {
+        if (input == 'a') return 'B';
+        if (input == 'b') return 'C';
+    }
+    else if (currentState == 'B') {
+        if (input == 'a') return 'D';
+        if (input == 'b') return 'E';
+    }
 
-    return "Unknown";
+
+    return 'F';
+}
+
+
+bool simulateDFA(string str) {
+    char currentState = 'A';
+
+    for (int i = 0; str[i] != '\0'; i++) {
+        currentState = transition(currentState, str[i]);
+    }
+
+
+    return true;
 }
 
 int main() {
+    string str;
 
-    ifstream MyFile("data.txt");
+    for (int i = 0; i < 5; i++) {
+        cout << "Enter string " << i + 1 << ": ";
+        cin >> str;
 
-    if(!MyFile) {
-        cout<<"File not found!";
-        return 0;
+        if (!isValidString(str)) {
+            cout << "Rejected (Invalid characters)\n";
+        }
+        else if (simulateDFA(str)) {
+            cout << "Accepted\n";
+        }
+        else {
+            cout << "Rejected\n";
+        }
     }
 
-    string line;
-    int lineNumber=1;
-
-    cout<<"Tokens and their types:\n\n";
-
-    while(getline(MyFile,line)) {
-
-        cout<<"Line "<<lineNumber<<": "<<line<<endl;
-
-        string token="";
-
-        for(int i=0;i<line.length();i++) {
-
-            char ch=line[i];
-
-
-            if(ch=='"') {
-                if(token!="") {
-                    cout<<token<<" -> "<<verifyToken(token)<<endl;
-                    token="";
-                }
-
-                string strToken="\"";
-                i++;
-
-                while(i<line.length() && line[i]!='"') {
-                    strToken+=line[i];
-                    i++;
-                }
-
-                if(i<line.length())
-                    strToken+="\"";
-
-                cout<<strToken<<" -> Constant"<<endl;
-            }
-
-            else if(ch!=' ' && !isOperator(ch) && !isPunctuation(ch)) {
-                token+=ch;
-            }
-
-            else {
-
-                if(token!="") {
-                    cout<<token<<" -> "<<verifyToken(token)<<endl;
-                    token="";
-                }
-
-                if(isOperator(ch) || isPunctuation(ch)) {
-                    string op(1,ch);
-
-                    if(isOperator(ch))
-                        cout<<op<<" -> Operator"<<endl;
-                    else
-                        cout<<op<<" -> Punctuation"<<endl;
-                }
-            }
-        }
-
-        if(token!="") {
-            cout<<token<<" -> "<<verifyToken(token)<<endl;
-        }
-
-        cout<<endl;
-        lineNumber++;
-    }
-
-    MyFile.close();
     return 0;
 }
